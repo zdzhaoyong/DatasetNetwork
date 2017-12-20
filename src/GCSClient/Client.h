@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 
-#include "../dbnet/RTMapperNetInterface.h"
+#include "RTMapperNetInterface.h"
 
 class InfomationViewer : public QTableWidget
 {

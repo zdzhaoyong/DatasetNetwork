@@ -2,6 +2,7 @@
 #define RTMAPPERNETINTERFACE_H
 
 #include "stdint.h"
+#include "string.h"
 
 enum VideoCodecType
 {
@@ -20,16 +21,50 @@ enum VideoFrameType
 struct RTMapperNetHeader // 128 bytes
 {
     RTMapperNetHeader()
-        : signature({'P','a','V','E'}),version(1),control_quality(255),video_quality(255),
+        : signature(get_signature()),version(1),control_quality(255),video_quality(255),
           header_size(sizeof(RTMapperNetHeader)),timestamp(0),battery(1),
           vx(0),vy(0),vz(0),lat(0),lng(0),alt(0),H(0),HDOP_H(0),HDOP_V(0),
           nSat(0),uav_roll(0),uav_pitch(0),uav_yaw(0),cam_roll(0),cam_pitch(0),cam_yaw(0),
           payload_size(0),video_codec(VIDEOCODEC_JPEG),frame_type(FRAMETYPE_IFRAME),
-          stream_width(0),stream_height(0),display_width(0),display_height(0){}
+          stream_width(0),stream_height(0),display_width(0),display_height(0){
+    }
 
-    static const char* get_signature(){return "PaVE";}
+    template <typename T>
+    void convert(T& t)
+    {
+        T copy=t;
+        char* it=sizeof(t)-1+(char*)&t;
+        char* c=(char*)&copy;
+        for(int i=0;i<sizeof(t);i++)
+        {
+            *(it--)=*(c++);
+        }
+    }
+    void convert()
+    {
+        if(signature==get_signature()) return;
+        convert(signature);
+        convert(timestamp);
+        convert(battery);
+        convert(vx);
+        convert(vy);
+        convert(vz);
+        convert(lat);convert(lng);
+        convert(alt);convert(H);convert(HDOP_H);convert(HDOP_V);
+        convert(nSat);convert(uav_roll);convert(uav_pitch);convert(uav_yaw);
+        convert(cam_roll);convert(cam_pitch);convert(cam_yaw);
+        convert(payload_size);convert(stream_width);convert(stream_height);
+        convert(display_width);convert(display_height);
+    }
+
+    static int32_t get_signature(){
+        return 1348556357;
+    }
+
+    bool isValid(){return signature==get_signature();}
+
     // 16 bytes
-    uint8_t     signature[4];   // "PaVE" - used to identify the start of frame
+    int32_t     signature;      // "PaVE" - used to identify the start of frame
     uint8_t     version;        // Version code, current version 1 */
     uint8_t     control_quality;// Current connect quality for control commands
     uint8_t     video_quality;  // Current connect quality for video transfer
@@ -68,9 +103,7 @@ struct RTMapperNetHeader // 128 bytes
     uint16_t    stream_height;  /* ex: 368 */
     uint16_t    display_width;  /* ex: 640 */
     uint16_t    display_height; /* ex: 360 */
-    uint8_t     reserved1[2];   /* Padding to align on 16 bytes */
-
-    uint8_t     reserved2[16];  /* Padding to align on 16 bytes */
+    char        uavname[20];  //< UAV Name
 };
 
 
