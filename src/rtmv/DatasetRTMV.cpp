@@ -289,6 +289,11 @@ public:
                 VecParament<double> camP=var.get_var(_cameraName.toStdString()+".Paraments",VecParament<double>());
                 _camera=GSLAM::Camera(camP.data);
             }
+            else if(svar.exist(_cameraName.toStdString()+".Paraments"))
+            {
+                VecParament<double> camP=svar.get_var(_cameraName.toStdString()+".Paraments",VecParament<double>());
+                _camera=GSLAM::Camera(camP.data);
+            }
             else{
                 std::string cam=_cameraName.toStdString();
                 std::string camFolder = svar.GetString("MainWindow.CalibFolder",svar.GetString("MainWindow.DataFolder","")+"/calib");
